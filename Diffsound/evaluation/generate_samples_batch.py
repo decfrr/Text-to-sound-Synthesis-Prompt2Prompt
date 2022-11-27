@@ -170,6 +170,8 @@ class Diffsound():
         return model_out
 
     def generate_sample(self, val_path, truncation_rate, save_root, fast=False):
+        # !see text-to-sound.ipynb
+
         # os.makedirs(save_root, exist_ok=True)
         # print('save_root ',save_root)
         # assert 1==2
@@ -197,15 +199,6 @@ class Diffsound():
             # )
             controller = Controllers.AttentionStore()
             with torch.no_grad():
-                # model_out = self.model.generate_content(
-                #     batch=data_i,
-                #     filter_ratio=0,
-                #     controller=controller,
-                #     replicate=1, # 每个样本重复多少次?
-                #     content_ratio=1,
-                #     return_att_weight=False,
-                #     sample_type="top"+str(truncation_rate)+add_string,
-                # ) # B x C x H x W
                 model_out = self.run_and_generate(
                     data_i=data_i,
                     filter_ratio=0,

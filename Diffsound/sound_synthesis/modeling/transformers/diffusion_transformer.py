@@ -229,16 +229,6 @@ def register_attention_control(self, controller):
                 count = register_recr(net__, count)
         return count
 
-    # cross_att_count = 0
-    # sub_nets = model.unet.named_children()
-    # for net in sub_nets:
-    #     if "down" in net[0]:
-    #         cross_att_count += register_recr(net[1], 0, "down")
-    #     elif "up" in net[0]:
-    #         cross_att_count += register_recr(net[1], 0, "up")
-    #     elif "mid" in net[0]:
-    #         cross_att_count += register_recr(net[1], 0, "mid")
-    # controller.num_att_layers = cross_att_count
     cross_att_count = 0
     for block in self.transformer.blocks:
         cross_att_count += register_recr(block, 0)

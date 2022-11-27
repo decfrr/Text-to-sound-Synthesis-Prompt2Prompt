@@ -193,14 +193,14 @@ class Block(nn.Module):
         self.if_upsample = if_upsample
         self.attn_type = attn_type
 
-        if attn_type in ['selfcross', 'selfcondition', 'self']: 
+        if attn_type in ['selfcross', 'selfcondition', 'self']:
             if 'adalayernorm' in timestep_type:
                 self.ln1 = AdaLayerNorm(n_embd, diffusion_step, timestep_type)
             else:
                 print("timestep_type wrong")
         else:
             self.ln1 = nn.LayerNorm(n_embd)
-        
+
         self.ln2 = nn.LayerNorm(n_embd)
         # self.if_selfcross = False
         if attn_type in ['self', 'selfcondition']:
@@ -251,7 +251,7 @@ class Block(nn.Module):
                 nn.Dropout(resid_pdrop),
             )
 
-    def forward(self, x, encoder_output, timestep, mask=None):    
+    def forward(self, x, encoder_output, timestep, mask=None):
         if self.attn_type == "selfcross":
             a, att = self.attn1(self.ln1(x, timestep), encoder_output, mask=mask)
             x = x + a
@@ -264,7 +264,7 @@ class Block(nn.Module):
             return x, att
         else:  # 'self'
             a, att = self.attn(self.ln1(x, timestep), encoder_output, mask=mask)
-            x = x + a 
+            x = x + a
 
         x = x + self.mlp(self.ln2(x))
 
@@ -316,7 +316,7 @@ class Text2ImageTransformer(nn.Module):
         # transformer
         assert attn_type == 'selfcross'
         all_attn_type = [attn_type] * n_layer
-        
+
         if content_spatial_size is None:
             s = int(math.sqrt(content_seq_len))
             assert s * s == content_seq_len
@@ -345,7 +345,7 @@ class Text2ImageTransformer(nn.Module):
             nn.LayerNorm(n_embd),
             nn.Linear(n_embd, out_cls),
         )
-        
+
         self.condition_seq_len = condition_seq_len # 77
         self.content_seq_len = content_seq_len # 1024 for image, 265 for spec
 
@@ -403,7 +403,7 @@ class Text2ImageTransformer(nn.Module):
                                 no_decay.add('{}.{}'.format(mn, pn))
 
             # validate that we considered every parameter
-            param_dict = {pn: p for pn, p in self.transformer.named_parameters()}# if p.requires_grad} 
+            param_dict = {pn: p for pn, p in self.transformer.named_parameters()}# if p.requires_grad}
             inter_params = decay & no_decay
             union_params = decay | no_decay
             assert len(inter_params) == 0, "parameters %s made it into both decay/no_decay sets!" % (str(inter_params), )
@@ -418,8 +418,8 @@ class Text2ImageTransformer(nn.Module):
             return optim_groups
 
     def forward(
-            self, 
-            input, 
+            self,
+            input,
             cond_emb,
             t):
         # print('input ',input.shape)
@@ -429,7 +429,7 @@ class Text2ImageTransformer(nn.Module):
         emb = cont_emb
         # この前に self.blocksのforwardを書き換えるような感じにする
 
-        for block_idx in range(len(self.blocks)):   
+        for block_idx in range(len(self.blocks)):
             if self.use_checkpoint == False:
                 emb, att_weight = self.blocks[block_idx](emb, cond_emb, t.to(emb.device)) # B x (Ld+Lt) x D, B x (Ld+Lt) x (Ld+Lt)
             else:
@@ -469,7 +469,7 @@ class Condition2ImageTransformer(nn.Module):
         # transformer
         assert attn_type == 'selfcondition'
         all_attn_type = [attn_type] * n_layer
-        
+
         if content_spatial_size is None:
             s = int(math.sqrt(content_seq_len))
             assert s * s == content_seq_len
@@ -498,7 +498,7 @@ class Condition2ImageTransformer(nn.Module):
             nn.LayerNorm(n_embd),
             nn.Linear(n_embd, out_cls),
         )
-        
+
         self.content_seq_len = content_seq_len
 
         self.apply(self._init_weights)
@@ -556,7 +556,7 @@ class Condition2ImageTransformer(nn.Module):
                                 no_decay.add('{}.{}'.format(mn, pn))
 
             # validate that we considered every parameter
-            param_dict = {pn: p for pn, p in self.transformer.named_parameters()}# if p.requires_grad} 
+            param_dict = {pn: p for pn, p in self.transformer.named_parameters()}# if p.requires_grad}
             inter_params = decay & no_decay
             union_params = decay | no_decay
             assert len(inter_params) == 0, "parameters %s made it into both decay/no_decay sets!" % (str(inter_params), )
@@ -571,14 +571,14 @@ class Condition2ImageTransformer(nn.Module):
             return optim_groups
 
     def forward(
-            self, 
-            input, 
+            self,
+            input,
             cond_emb,
             t):
         cont_emb = self.content_emb(input)
         emb = cont_emb
 
-        for block_idx in range(len(self.blocks)):   
+        for block_idx in range(len(self.blocks)):
             emb, att_weight = self.blocks[block_idx](emb, cond_emb, t.cuda()) # B x (Ld+Lt) x D, B x (Ld+Lt) x (Ld+Lt)
         logits = self.to_logits(emb) # B x (Ld+Lt) x n
         out = rearrange(logits, 'b l c -> b c l')
@@ -611,7 +611,7 @@ class UnCondition2ImageTransformer(nn.Module):
         # transformer
         assert attn_type == 'self'
         all_attn_type = [attn_type] * n_layer
-        
+
         if content_spatial_size is None:
             s = int(math.sqrt(content_seq_len))
             assert s * s == content_seq_len
@@ -638,7 +638,7 @@ class UnCondition2ImageTransformer(nn.Module):
             nn.LayerNorm(n_embd),
             nn.Linear(n_embd, out_cls),
         )
-        
+
         self.content_seq_len = content_seq_len
 
         self.apply(self._init_weights)
@@ -696,7 +696,7 @@ class UnCondition2ImageTransformer(nn.Module):
                                 no_decay.add('{}.{}'.format(mn, pn))
 
             # validate that we considered every parameter
-            param_dict = {pn: p for pn, p in self.transformer.named_parameters()}# if p.requires_grad} 
+            param_dict = {pn: p for pn, p in self.transformer.named_parameters()}# if p.requires_grad}
             inter_params = decay & no_decay
             union_params = decay | no_decay
             assert len(inter_params) == 0, "parameters %s made it into both decay/no_decay sets!" % (str(inter_params), )
@@ -711,14 +711,14 @@ class UnCondition2ImageTransformer(nn.Module):
             return optim_groups
 
     def forward(
-            self, 
-            input, 
+            self,
+            input,
             cond_emb,
             t):
         cont_emb = self.content_emb(input)
         emb = cont_emb
 
-        for block_idx in range(len(self.blocks)):   
+        for block_idx in range(len(self.blocks)):
             emb, att_weight = self.blocks[block_idx](emb, cond_emb, t.cuda()) # B x (Ld+Lt) x D, B x (Ld+Lt) x (Ld+Lt)
         logits = self.to_logits(emb) # B x (Ld+Lt) x n
         out = rearrange(logits, 'b l c -> b c l')
