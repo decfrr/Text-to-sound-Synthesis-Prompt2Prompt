@@ -97,7 +97,6 @@ class CrossAttention(nn.Module):
         v = self.value(encoder_output).view(B, T_E, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1))) # (B, nh, T, T)
-
         att = F.softmax(att, dim=-1) # (B, nh, T, T)
         att = self.attn_drop(att)
         y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
@@ -222,7 +221,7 @@ class Block(nn.Module):
                     n_embd=n_embd,
                     n_head=n_head,
                     seq_len=seq_len,
-                    attn_pdrop=attn_pdrop, 
+                    attn_pdrop=attn_pdrop,
                     resid_pdrop=resid_pdrop,
                     )
             self.attn2 = CrossAttention(
@@ -428,12 +427,13 @@ class Text2ImageTransformer(nn.Module):
         # print('cont_emb ',cont_emb.shape)
         # assert 1==2
         emb = cont_emb
+        # この前に self.blocksのforwardを書き換えるような感じにする
 
         for block_idx in range(len(self.blocks)):   
             if self.use_checkpoint == False:
-                emb, att_weight = self.blocks[block_idx](emb, cond_emb, t.cuda()) # B x (Ld+Lt) x D, B x (Ld+Lt) x (Ld+Lt)
+                emb, att_weight = self.blocks[block_idx](emb, cond_emb, t.to(emb.device)) # B x (Ld+Lt) x D, B x (Ld+Lt) x (Ld+Lt)
             else:
-                emb, att_weight = checkpoint(self.blocks[block_idx], emb, cond_emb, t.cuda())
+                emb, att_weight = checkpoint(self.blocks[block_idx], emb, cond_emb, t.to(emb.device))
         logits = self.to_logits(emb) # B x (Ld+Lt) x n
         # print('logits ',logits.shape)
         # assert 1==2

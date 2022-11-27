@@ -3,10 +3,10 @@ model:
   params:
     content_info: {key: image}
     condition_info: {key: text}
-    content_codec_config: 
+    content_codec_config:
       target: sound_synthesis.modeling.codecs.spec_codec.vqgan.VQModel
       params:
-        ckpt_path: '/apdcephfs/share_1316500/donchaoyang/code3/SpecVQGAN/logs/2022-04-24T23-17-27_audioset_codebook256/checkpoints/last.ckpt' # e.g. '2021-06-06T19-42-53_vas_specs_vqgan' or '2021-05-19T22-16-54_vggsound_specs_vqgan'
+        ckpt_path: './Diffsound/pre_model/last.ckpt' # e.g. '2021-06-06T19-42-53_vas_specs_vqgan' or '2021-05-19T22-16-54_vggsound_specs_vqgan'
         embed_dim: 256
         n_embed: 256 # codebook 的大小，若使用vggsound训练的codebook,则应该为1024
         ddconfig:
@@ -34,16 +34,16 @@ model:
        add_start_and_end: True
        with_mask: True
        pad_value: 0 # 0 for clip embedding and -100 for others
-       clip_embedding: False     ############################   if we use clip embedding 
+       clip_embedding: False     ############################   if we use clip embedding
        tokenizer_config:
         target: sound_synthesis.modeling.modules.clip.simple_tokenizer.SimpleTokenizer   #########
         params:
           end_idx: 49152                              ###################
-    diffusion_config:      
+    diffusion_config:
       target: sound_synthesis.modeling.transformers.diffusion_transformer.DiffusionTransformer
       params:
         diffusion_step: 100
-        alpha_init_type: 'alpha1'       # init_type = fix or cos or linear 
+        alpha_init_type: 'alpha1'       # init_type = fix or cos or linear
         auxiliary_loss_weight: 5.0e-4
         adaptive_auxiliary_loss: True
         mask_weight: [1, 1]    # the loss weight on mask region and non-mask region
@@ -58,7 +58,7 @@ model:
             content_spatial_size: [5, 53]
             n_embd: 1024 # the dim of embedding dims
             condition_dim: 512
-            n_head: 16 
+            n_head: 16
             attn_pdrop: 0.0
             resid_pdrop: 0.0
             block_activate: GELU2

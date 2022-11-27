@@ -27,7 +27,7 @@ def _download(url: str, root: str = os.path.expanduser("~/.cache/image-synthesis
 
     expected_sha256 = url.split("/")[-2]
     # download_target = os.path.join(root, filename)
-    download_target = "/apdcephfs/share_1316500/donchaoyang/code3/VQ-Diffusion/OUTPUT/pretrained_model/ViT-B-32.pt"
+    download_target = "./Diffsound/pre_model/ViT-B-32.pt"
 
     if os.path.exists(download_target) and not os.path.isfile(download_target):
         raise RuntimeError(f"{download_target} exists and is not a regular file")
@@ -93,7 +93,7 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     """
     if name in _MODELS:
         # model_path = _download(_MODELS[name])
-        model_path = "/apdcephfs/share_1316500/donchaoyang/code3/VQ-Diffusion/OUTPUT/pretrained_model/ViT-B-32.pt"
+        model_path = "./Diffsound/pre_model/ViT-B-32.pt"
     elif os.path.isfile(name):
         model_path = name
     else:
@@ -161,7 +161,7 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     return model, _transform(model.input_resolution.item())
 
 
-def tokenize(texts: Union[str, List[str]], context_length: int = 77, 
+def tokenize(texts: Union[str, List[str]], context_length: int = 77,
              add_start_and_end: bool = True, with_mask: bool = True,
              pad_value: int = 0, tokenizer=None, just_token: bool = False) -> torch.LongTensor:
     """
@@ -174,7 +174,7 @@ def tokenize(texts: Union[str, List[str]], context_length: int = 77,
 
     context_length : int
         The context length to use; all CLIP models use 77 as the context length
-    
+
     just_token: bool
         If True, just return the token of text
 

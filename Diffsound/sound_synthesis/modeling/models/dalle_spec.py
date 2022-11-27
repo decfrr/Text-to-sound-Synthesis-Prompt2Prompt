@@ -47,7 +47,7 @@ class DALLE(nn.Module):
         model = model.eval()
         model.train = disabled_train # 重写model的train函数，确保该模型不会被train
         self.content_codec = model
-    
+
     def parameters(self, recurse=True, name=None):
         if name is None or name == 'none':
             return super().parameters(recurse=recurse)
@@ -67,7 +67,7 @@ class DALLE(nn.Module):
 
     def get_ema_model(self):
         return self.transformer
-    
+
     def get_tokens(self, spec): #
         quant_z, _, info = self.content_codec.encode(spec) # spec to index?
         indices = info[2].view(quant_z.shape[0], -1)
@@ -76,7 +76,7 @@ class DALLE(nn.Module):
         self.zshape = quant_z.shape
         # print('indices ',indices.shape)
         return quant_z, indices
-    
+
     def decode_to_img(self, index, zshape, stage='first'): # under review
         if stage == 'first':
             index = self.first_stage_permuter(index, reverse=True)
@@ -89,7 +89,7 @@ class DALLE(nn.Module):
         quant_z = self.content_codec.quantize.get_codebook_entry(index.reshape(-1), shape=bhwc)
         x = self.content_codec.decode(quant_z)
         return x
-    
+
     @torch.no_grad()
     def prepare_condition(self, batch, condition=None):
         cond_key = self.condition_info['key'] # text
@@ -160,7 +160,7 @@ class DALLE(nn.Module):
             def wrapper(*args, **kwards):
                 out = func(*args, **kwards)
                 # notice for different batches, out are same, we do it on out[0]
-                temp, indices = torch.sort(out, 1, descending=True) 
+                temp, indices = torch.sort(out, 1, descending=True)
                 temp1 = torch.exp(temp)
                 temp2 = temp1.cumsum(dim=1)
                 temp3 = temp2 < truncation_r
@@ -184,6 +184,8 @@ class DALLE(nn.Module):
         condition=None,
         filter_ratio = 0.5,
         temperature = 1.0,
+        controller,
+        content_token=None,
         content_ratio = 0.0,
         replicate=1,
         return_att_weight=False,
@@ -193,14 +195,11 @@ class DALLE(nn.Module):
             condition = self.prepare_condition(batch=batch)
         else:
             condition = self.prepare_condition(batch=None, condition=condition)
-        
+
         if replicate != 1: # 重复多少次?
             for k in condition.keys():
                 if condition[k] is not None:
                     condition[k] = torch.cat([condition[k] for _ in range(replicate)], dim=0)
-        # print(condition)
-        # assert 1==2
-        content_token = None
 
         if len(sample_type.split(',')) > 1: # using r,fast
             if sample_type.split(',')[1][:1]=='q':
@@ -226,6 +225,7 @@ class DALLE(nn.Module):
             trans_out = self.transformer.sample(condition_token=condition['condition_token'],
                                             condition_mask=condition.get('condition_mask', None),
                                             condition_embed=condition.get('condition_embed_token', None),
+                                            controller=controller,
                                             content_token=content_token,
                                             filter_ratio=filter_ratio,
                                             temperature=temperature,
@@ -236,13 +236,14 @@ class DALLE(nn.Module):
         zshape = (trans_out['content_token'].shape[0], 256, 5, 53)
         # print(trans_out['content_token'].shape)
         # assert 1==2
-        content = self.decode_to_img(trans_out['content_token'], zshape)
+        decode_content = self.decode_to_img(trans_out['content_token'], zshape)
         #content = self.content_codec.decode(trans_out['content_token'])  #(8,1024)->(8,3,256,256)
         self.train()
         out = {
-            'content': content
+            'decode_content': decode_content,
+            'content_token': trans_out['content_token']
         }
-        
+
 
         return out
 
@@ -286,7 +287,7 @@ class DALLE(nn.Module):
             # quant_z = quant_z.permute(0,2,3,1)
             # quant_z = self.decode_to_img(content['content_token'],zshape)
             # x = self.content_codec.decode(quant_z)
-            #content_samples['reconstruction_image'] = self.content_codec.decode(content['content_token'])  
+            #content_samples['reconstruction_image'] = self.content_codec.decode(content['content_token'])
             content_samples['reconstruction_image'] = self.decode_to_img(content['content_token'], zshape)
         for fr in filter_ratio:
             for cr in content_ratio:
@@ -332,7 +333,7 @@ class DALLE(nn.Module):
                     content_samples['cond1_cont{}_fr{}_image_content_attention'.format(cr, fr)] = content_att.view(*shape) # B x Lt x Lt -> B x Lt x H x W
                 if return_logits:
                     content_samples['logits'] = trans_out['logits']
-        self.train() 
+        self.train()
         output = {'condition': batch[self.condition_info['key']]}  # 同时返回text和预测的image
         output.update(content_samples)
         return output
