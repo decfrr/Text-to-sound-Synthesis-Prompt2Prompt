@@ -2,9 +2,11 @@
 ## About
 ![structure](fig/structure.png)
 
-This is a fork of [Text-to-sound-Synthesis](https://github.com/yangdongchao/Text-to-sound-Synthesis) 
-with an implementation of the [Prompt-to-Prompt](https://github.com/google/prompt-to-prompt) method.
-It enables more intuitive editing in Text-to-sound using the diffusion model.
+This repository includes a intuitive editing framework for text-to-sound genereation.
+Edits are controlled by text, and it aims to preserve some content of the original output.
+The framework is based on [promt-to-prompt](https://github.com/google/prompt-to-prompt), and we implemented it in [Diffsound](https://github.com/yangdongchao/Text-to-sound-Synthesis).
+It is tested by using a pre-trained model (please check the setup section). 
+
 
 This project was created as part of the Artificial Intelligence Exercise, one of the student experiments 
 in the Department of Electrical and Electronic Engineering, Department of Information and Communication Engineering, Faculty of Engineering,
@@ -12,9 +14,11 @@ The University of Tokyo.
 
 For more information, please check the slide (in Japanese).
 
+**Note**: Due to time constraints, development has not been completed and correct operation cannot be guaranteed.
+
 ## Contributors
 - Hirota [[GitHub]](https://github.com/decfrr)
-- jellyfish_rumble [[GitHub]](https://github.com/jellyfish_rumble)
+- jellyfish_rumble [[GitHub]](https://github.com/hamadatakaki)
 - asterisk-cn [[GitHub]](https://github.com/asterisk-cn)
 
 
@@ -35,7 +39,7 @@ pip install -r requirements.txt
 # For conda (conda-forge)
 conda env create -n diffsound -f requirements.txt
 ```
-3. Download pre-trained model and place them to `Diffsound/pre_model`
+3. Download pre-trained model (**please check the following section**) and place them to `Diffsound/pre_model`
 4. Start `text-to-sound.ipynb`
 
 ### Pre-trained Model
