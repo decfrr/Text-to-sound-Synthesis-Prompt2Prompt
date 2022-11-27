@@ -4,7 +4,7 @@
 
 This repository includes a intuitive editing framework for text-to-sound genereation.
 Edits are controlled by text, and it aims to preserve some content of the original output.
-The framework is based on [promt-to-prompt](https://github.com/google/prompt-to-prompt), and we implemented it in [Diffsound](https://github.com/yangdongchao/Text-to-sound-Synthesis).
+The framework is based on [prompt-to-prompt](https://github.com/google/prompt-to-prompt), and we implemented it in [Diffsound](https://github.com/yangdongchao/Text-to-sound-Synthesis).
 It is tested by using a pre-trained model (please check the setup section). 
 
 
