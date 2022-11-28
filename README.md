@@ -37,7 +37,7 @@ cd Text-to-sound-Synthesis-Prompt2Prompt
 # For pip
 pip install -r requirements.txt
 # For conda (conda-forge)
-conda env create -n diffsound -f requirements.txt
+conda env create -n diffsound -f requirements.yml
 ```
 3. Download pre-trained model (**please check the following section**) and place them to `Diffsound/pre_model`
 4. Start `text-to-sound.ipynb`
